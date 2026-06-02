@@ -477,6 +477,9 @@
   function getGeneralMultiplication(prix) {
     if (prix > 0 && prix < 2.5) return 7;
     if (prix >= 2.5 && prix <= 3.5) return 6;
+    if (prix >= 3.6 && prix <= 4.5) return 5.5;
+    if (prix >= 4.6 && prix <= 5.5) return 5.2;
+    if (prix >= 5.6 ) return 5;
     return null;
   }
 
@@ -536,10 +539,20 @@
     const prixUnitaire = parseFloat(document.getElementById('prix-unitaire').value) || 0;
     const mult         = parseFloat(document.getElementById('multiplication').value) || 0;
 
-    // Livraison gratuite si le prix est supérieur ou égal à 20€ ou si le poids est inférieur ou égal à 0.3 kg
+    // Livraison gratuite si le prix est supérieur ou égal à 20€. Sinon frais selon tranches,
+    // avec un plafond pour que 19€ ne revienne jamais plus cher qu'un article à 20€.
     let fraisLivraison = 0;
-    if (prixUnitaire < 20 && poids > 0.3) {
+    if (prixUnitaire < 10 && poids >= 0.3) {
       fraisLivraison = poids * 7;
+    } else if (prixUnitaire < 15 && prixUnitaire >= 10 && poids >= 0.3) {
+      fraisLivraison = poids * 5;
+    } else if (prixUnitaire < 20 && prixUnitaire >= 15 && poids >= 0.3) {
+      fraisLivraison = poids * 3;
+    }
+
+    if (prixUnitaire < 20) {
+      const maxShipping = Math.max(0, 20 - prixUnitaire);
+      fraisLivraison = Math.min(fraisLivraison, maxShipping);
     }
 
     const ttcTotal = prixUnitaire + fraisLivraison;
