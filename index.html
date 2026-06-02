@@ -545,7 +545,7 @@
     let fraisLivraison = livraisonGratuite ? 0 : (poids > 0 ? poids * 7 : 0);
 
     // Règle spéciale : si prix < 10€ et poids > 0.5kg, appliquer livraison uniquement si la livraison gratuite n'est pas active
-    if (!livraisonGratuite && prixUnitaire < 10 && poids > 0.5) {
+    if (!livraisonGratuite && prixUnitaire < 10 && poids >= 0.3) {
       fraisLivraison = poids * 7;
     }
 
