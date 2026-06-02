@@ -88,6 +88,13 @@
       color: rgba(255,255,255,0.3);
     }
 
+    input[disabled] {
+      background: rgba(255,255,255,0.04);
+      border-color: rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.6);
+      cursor: not-allowed;
+    }
+
     input:focus, select:focus {
       border-color: #4da6d9;
       background: rgba(77,166,217,0.1);
@@ -379,14 +386,7 @@
     <!-- Multiplication -->
     <div class="form-group">
       <label for="multiplication">Multiplication</label>
-      <input type="number" id="multiplication" placeholder="ex : 5" min="0" step="0.1" />
-    </div>
-
-    <!-- Livraison gratuite -->
-    <div class="form-group full-width">
-      <label>
-        <input type="checkbox" id="livraison-gratuite" checked /> Livraison gratuite
-      </label>
+      <input type="number" id="multiplication" placeholder="ex : 5" min="0" step="0.1" disabled />
     </div>
 
     <!-- Bouton -->
@@ -509,8 +509,6 @@
     calculate(); // recalcul auto
   });
 
-  document.getElementById('livraison-gratuite').addEventListener('change', calculate);
-
   document.getElementById('categorie').addEventListener('change', function () {
     const categorie = this.value;
     const poidsInput = document.getElementById('poids');
@@ -539,15 +537,9 @@
     const poids        = parseFloat(document.getElementById('poids').value) || 0;
     const prixUnitaire = parseFloat(document.getElementById('prix-unitaire').value) || 0;
     const mult         = parseFloat(document.getElementById('multiplication').value) || 0;
-    const livraisonGratuite = document.getElementById('livraison-gratuite').checked;
 
-    // Frais de livraison selon poids : 1 kg = 7 €
-    let fraisLivraison = livraisonGratuite ? 0 : (poids > 0 ? poids * 7 : 0);
-
-    // Règle spéciale : si prix < 10€ et poids > 0.5kg, appliquer livraison uniquement si la livraison gratuite n'est pas active
-    if (!livraisonGratuite && prixUnitaire < 10 && poids >= 0.3) {
-      fraisLivraison = poids * 7;
-    }
+    // Livraison gratuite si le poids est inférieur ou égal à 0.3 kg
+    let fraisLivraison = poids > 0.3 ? poids * 7 : 0;
 
     const ttcTotal = prixUnitaire + fraisLivraison;
 
