@@ -474,27 +474,20 @@
     return `${value.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} TND`;
   }
 
-  function getGeneralMultiplication(prix) {
-    if (prix > 0 && prix < 2.5) return 7;
-    if (prix >= 2.5 && prix <= 3.5) return 6;
-    if (prix >= 3.6 && prix <= 4.5) return 5.5;
-    if (prix >= 4.6 && prix <= 5.5) return 5.2;
-    if (prix >= 5.6 ) return 5;
-    return null;
+  function getMultiplicationForBijoux(prix) {
+    if (prix <= 1) return 7.5;
+    if (prix > 1 && prix <= 2.5) return 6.5;
+    if (prix > 2.5 && prix <= 3.5) return 5.5;
+    if (prix > 3.5) return 5; 
+    return 5; // default
   }
 
   function resolveMultiplication(categorie, prix) {
-    const generalMult = getGeneralMultiplication(prix);
-    if (generalMult !== null) {
-      return generalMult;
+    if (categorie === 'bijoux') {
+      return getMultiplicationForBijoux(prix);
     }
 
-    const rule = tarifDinar[categorie];
-    if (rule && typeof rule.multMax === 'number') {
-      return rule.multMax;
-    }
-
-    return null;
+    return 5;
   }
 
   let poidsManuel = false;
@@ -539,26 +532,18 @@
     const prixUnitaire = parseFloat(document.getElementById('prix-unitaire').value) || 0;
     const mult         = parseFloat(document.getElementById('multiplication').value) || 0;
 
-    // Livraison gratuite si le prix est supérieur ou égal à 20€. Sinon frais selon tranches,
-    // avec un plafond pour que 19€ ne revienne jamais plus cher qu'un article à 20€.
+    // Nouvelle règle : multiplication toujours 5 sauf bijoux, et surcharge de 10 dinars pour chaussures lourds ou vêtements lourds.
     let fraisLivraison = 0;
-    if (prixUnitaire < 10 && poids >= 0.3) {
-      fraisLivraison = poids * 7;
-    } else if (prixUnitaire < 15 && prixUnitaire >= 10 && poids >= 0.3) {
-      fraisLivraison = poids * 5;
-    } else if (prixUnitaire < 20 && prixUnitaire >= 15 && poids >= 0.3) {
-      fraisLivraison = poids * 3;
+    let surchargeDinar = 0;
+
+    if (categorie === 'chaussureslourds' || categorie === 'vetementslourds') {
+      surchargeDinar = 15;
     }
 
-    if (prixUnitaire < 20) {
-      const maxShipping = Math.max(0, 20 - prixUnitaire);
-      fraisLivraison = Math.min(fraisLivraison, maxShipping);
-    }
+    const ttcTotal = prixUnitaire;
 
-    const ttcTotal = prixUnitaire + fraisLivraison;
-
-    // Prix en dinars : prix unitaire * multiplication + (livraison * 3.5)
-    const prixDinar = (prixUnitaire * mult) + (fraisLivraison * 3.5);
+    // Prix en dinars : prix unitaire * multiplication + surcharge chaussures lourds
+    const prixDinar = Math.round((prixUnitaire * mult) + surchargeDinar);
 
     // Affichage
     const card  = document.getElementById('result-card');
@@ -580,8 +565,8 @@
     if (mult > 0)
       html += line('Multiplication', mult);
 
-    if (fraisLivraison > 0)
-      html += line(`Livraison (${poids} kg)`, `+ ${fmt(fraisLivraison)}`);
+    if (surchargeDinar > 0)
+      html += line('Surcharge chaussures lourds', formatDinar(surchargeDinar));
     else
       html += line('Livraison', 'Gratuite');
 
