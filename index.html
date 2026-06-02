@@ -474,15 +474,6 @@
     return `${value.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} TND`;
   }
 
-  function getMultiplicationForBijoux(prix) {
-    if (prix <= 1) return 10;
-    if (prix > 1 && prix <= 2) return 9;
-    if (prix > 2 && prix <= 5) return 8;
-    if (prix > 5 && prix <= 10) return 7;
-    if (prix > 10) return 6; // moyenne de 6 à 7
-    return 10; // default
-  }
-
   function getGeneralMultiplication(prix) {
     if (prix > 0 && prix < 2.5) return 7;
     if (prix >= 2.5 && prix <= 3.5) return 6;
@@ -496,14 +487,11 @@
   });
 
   document.getElementById('prix-unitaire').addEventListener('input', function () {
-    const categorie = document.getElementById('categorie').value;
     const prix = parseFloat(this.value) || 0;
     const generalMult = getGeneralMultiplication(prix);
 
     if (generalMult !== null) {
       document.getElementById('multiplication').value = generalMult;
-    } else if (categorie === 'bijoux') {
-      document.getElementById('multiplication').value = getMultiplicationForBijoux(prix);
     }
 
     calculate(); // recalcul auto
@@ -522,11 +510,6 @@
 
     if (generalMult !== null) {
       document.getElementById('multiplication').value = generalMult;
-    } else if (categorie === 'bijoux') {
-      document.getElementById('multiplication').value = getMultiplicationForBijoux(prix);
-    } else {
-      const rule = tarifDinar[categorie];
-      document.getElementById('multiplication').value = rule ? rule.multMax : '';
     }
 
     calculate(); // recalcul auto
