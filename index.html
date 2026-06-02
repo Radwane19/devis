@@ -539,7 +539,7 @@
     const mult         = parseFloat(document.getElementById('multiplication').value) || 0;
 
     // Livraison gratuite si le poids est inférieur ou égal à 0.3 kg
-    let fraisLivraison = poids > 0.3 ? poids * 7 : 0;
+    let fraisLivraison = poids >= 0.3 ? poids * 7 : 0;
 
     const ttcTotal = prixUnitaire + fraisLivraison;
 
