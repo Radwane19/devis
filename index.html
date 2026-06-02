@@ -411,23 +411,23 @@
   // --- State ---
 
   const poidsParCategorie = {
-    vetementslegers: 0.3,
-    vetementslourds: 0.8,
-    chaussureslegers: 0.4,
-    chaussureslourds: 0.7,
-    sacs: 0.5,
-    montres: 0.2,
+    vetementslegers: 0.2,
+    vetementslourds: 0.5,
+    chaussureslegers: 0.3,
+    chaussureslourds: 0.5,
+    sacs: 0.3,
+    montres: 0.1,
     bijoux: 0.1,
-    maquillage: 0.25,
-    ongles: 0.15,
-    soins: 0.4,
-    lunettes: 0.2,
-    cheveux: 0.15,
-    acctelephone: 0.2,
-    deco: 1.5,
-    jouets: 0.7,
-    sousvetement: 0.25,
-    autre: 1
+    maquillage: 0.1,
+    ongles: 0.05,
+    soins: 0.3,
+    lunettes: 0.1,
+    cheveux: 0.1,
+    acctelephone: 0.1,
+    deco: 0.5,
+    jouets: 0.4,
+    sousvetement: 0.1,
+    autre: 0.3
   };
 
   const categorieLibelles = {
@@ -483,6 +483,12 @@
     return 10; // default
   }
 
+  function getGeneralMultiplication(prix) {
+    if (prix > 0 && prix < 2.5) return 7;
+    if (prix >= 2.5 && prix <= 3.5) return 6;
+    return null;
+  }
+
   let poidsManuel = false;
 
   document.getElementById('poids').addEventListener('input', () => {
@@ -491,10 +497,15 @@
 
   document.getElementById('prix-unitaire').addEventListener('input', function () {
     const categorie = document.getElementById('categorie').value;
-    if (categorie === 'bijoux') {
-      const prix = parseFloat(this.value) || 0;
+    const prix = parseFloat(this.value) || 0;
+    const generalMult = getGeneralMultiplication(prix);
+
+    if (generalMult !== null) {
+      document.getElementById('multiplication').value = generalMult;
+    } else if (categorie === 'bijoux') {
       document.getElementById('multiplication').value = getMultiplicationForBijoux(prix);
     }
+
     calculate(); // recalcul auto
   });
 
@@ -508,8 +519,12 @@
       poidsInput.value = poidsParCategorie[categorie];
     }
 
-    if (categorie === 'bijoux') {
-      const prix = parseFloat(document.getElementById('prix-unitaire').value) || 0;
+    const prix = parseFloat(document.getElementById('prix-unitaire').value) || 0;
+    const generalMult = getGeneralMultiplication(prix);
+
+    if (generalMult !== null) {
+      document.getElementById('multiplication').value = generalMult;
+    } else if (categorie === 'bijoux') {
       document.getElementById('multiplication').value = getMultiplicationForBijoux(prix);
     } else {
       const rule = tarifDinar[categorie];
@@ -529,8 +544,8 @@
     // Frais de livraison selon poids : 1 kg = 7 €
     let fraisLivraison = livraisonGratuite ? 0 : (poids > 0 ? poids * 7 : 0);
 
-    // Règle spéciale : si prix < 10€ et poids > 0.5kg, appliquer livraison
-    if (prixUnitaire < 10 && poids > 0.5) {
+    // Règle spéciale : si prix < 10€ et poids > 0.5kg, appliquer livraison uniquement si la livraison gratuite n'est pas active
+    if (!livraisonGratuite && prixUnitaire < 10 && poids > 0.5) {
       fraisLivraison = poids * 7;
     }
 
