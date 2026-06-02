@@ -480,6 +480,20 @@
     return null;
   }
 
+  function resolveMultiplication(categorie, prix) {
+    const generalMult = getGeneralMultiplication(prix);
+    if (generalMult !== null) {
+      return generalMult;
+    }
+
+    const rule = tarifDinar[categorie];
+    if (rule && typeof rule.multMax === 'number') {
+      return rule.multMax;
+    }
+
+    return null;
+  }
+
   let poidsManuel = false;
 
   document.getElementById('poids').addEventListener('input', () => {
@@ -487,11 +501,12 @@
   });
 
   document.getElementById('prix-unitaire').addEventListener('input', function () {
+    const categorie = document.getElementById('categorie').value;
     const prix = parseFloat(this.value) || 0;
-    const generalMult = getGeneralMultiplication(prix);
+    const resolvedMult = resolveMultiplication(categorie, prix);
 
-    if (generalMult !== null) {
-      document.getElementById('multiplication').value = generalMult;
+    if (resolvedMult !== null) {
+      document.getElementById('multiplication').value = resolvedMult;
     }
 
     calculate(); // recalcul auto
@@ -506,10 +521,10 @@
     }
 
     const prix = parseFloat(document.getElementById('prix-unitaire').value) || 0;
-    const generalMult = getGeneralMultiplication(prix);
+    const resolvedMult = resolveMultiplication(categorie, prix);
 
-    if (generalMult !== null) {
-      document.getElementById('multiplication').value = generalMult;
+    if (resolvedMult !== null) {
+      document.getElementById('multiplication').value = resolvedMult;
     }
 
     calculate(); // recalcul auto
@@ -521,8 +536,11 @@
     const prixUnitaire = parseFloat(document.getElementById('prix-unitaire').value) || 0;
     const mult         = parseFloat(document.getElementById('multiplication').value) || 0;
 
-    // Livraison gratuite si le poids est inférieur ou égal à 0.3 kg
-    let fraisLivraison = poids >= 0.3 ? poids * 7 : 0;
+    // Livraison gratuite si le prix est supérieur ou égal à 20€ ou si le poids est inférieur ou égal à 0.3 kg
+    let fraisLivraison = 0;
+    if (prixUnitaire < 20 && poids > 0.3) {
+      fraisLivraison = poids * 7;
+    }
 
     const ttcTotal = prixUnitaire + fraisLivraison;
 
