@@ -474,20 +474,23 @@
     return `${value.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} TND`;
   }
 
-  function getMultiplicationForBijoux(prix) {
-    if (prix <= 1) return 7.5;
-    if (prix > 1 && prix <= 2.5) return 6.5;
-    if (prix > 2.5 && prix <= 3.5) return 5.5;
-    if (prix > 3.5) return 5; 
-    return 5; // default
+  const multiplicationRules = {
+    bijoux: [
+      { max: 1, mult: 7 },
+      { max: 2.6, mult: 6.5 },
+      { max: 3.5, mult: 5.3 },
+      { max: Infinity, mult: 5 }
+    ]
+  };
+
+  function getMultiplicationForCategorie(categorie, prix) {
+    const rules = multiplicationRules[categorie] || [{ max: Infinity, mult: 5 }];
+    const rule = rules.find(rule => prix <= rule.max);
+    return rule ? rule.mult : 5;
   }
 
   function resolveMultiplication(categorie, prix) {
-    if (categorie === 'bijoux') {
-      return getMultiplicationForBijoux(prix);
-    }
-
-    return 5;
+    return getMultiplicationForCategorie(categorie, prix);
   }
 
   let poidsManuel = false;
@@ -532,6 +535,9 @@
     const prixUnitaire = parseFloat(document.getElementById('prix-unitaire').value) || 0;
     const mult         = parseFloat(document.getElementById('multiplication').value) || 0;
 
+    // Arrondi du prix unitaire avant conversion pour éviter les effets de valeurs décimales.
+    const prixUnitaireArrondi = prixUnitaire > 0 ? Math.round(prixUnitaire) : 0;
+
     // Nouvelle règle : multiplication toujours 5 sauf bijoux, et surcharge de 10 dinars pour chaussures lourds ou vêtements lourds.
     let fraisLivraison = 0;
     let surchargeDinar = 0;
@@ -541,15 +547,15 @@
     }
     if (categorie === 'chaussureslourds' || categorie === 'vetementslourds'
       || categorie === 'chaussureslegers' || categorie === 'vetementslegers'
-      || categorie === 'sacs' || categorie === 'montres' || categorie === 'bijoux' || categorie === 'maquillage' || categorie === 'ongles' || categorie === 'soins'
+      || categorie === 'sacs'
     ) {
       // fair l'arrondi à 5 euros supérieur pour les catégories de vêtements et chaussures
       surchargeDinar = surchargeDinar + (Math.ceil(prixUnitaire / 5) * 5 - surchargeDinar);
     }
     const ttcTotal = prixUnitaire;
 
-    // Prix en dinars : prix unitaire * multiplication + surcharge chaussures lourds
-    const prixDinar = Math.round((prixUnitaire * mult) + surchargeDinar);
+    // Prix en dinars : prix unitaire arrondi * multiplication + surcharge chaussures lourds
+    const prixDinar = Math.round((prixUnitaireArrondi * mult) + surchargeDinar);
 
     // Affichage
     const card  = document.getElementById('result-card');
@@ -572,7 +578,7 @@
       html += line('Multiplication', mult);
 
     if (surchargeDinar > 0)
-      html += line('Surcharge chaussures lourds', formatDinar(surchargeDinar));
+      html += line('Surcharge poids', formatDinar(surchargeDinar));
     else
       html += line('Livraison', 'Gratuite');
 
