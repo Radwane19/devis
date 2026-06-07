@@ -437,7 +437,7 @@
     chaussureslourds: 'Chaussures lourds',
     sacs: 'Sacs',
     montres: 'Montres',
-    bijoux: 'Bijoux',
+    bijoux: 'Bijoux et accessoires',
     maquillage: 'Maquillage',
     ongles: 'Ongles & faux cils',
     soins: 'Skincare / soins',
@@ -537,9 +537,15 @@
     let surchargeDinar = 0;
 
     if (categorie === 'chaussureslourds' || categorie === 'vetementslourds') {
-      surchargeDinar = 15;
+      surchargeDinar = 10;
     }
-
+    if (categorie === 'chaussureslourds' || categorie === 'vetementslourds'
+      || categorie === 'chaussureslegers' || categorie === 'vetementslegers'
+      || categorie === 'sacs' || categorie === 'montres' || categorie === 'bijoux' || categorie === 'maquillage' || categorie === 'ongles' || categorie === 'soins'
+    ) {
+      // fair l'arrondi à 5 euros supérieur pour les catégories de vêtements et chaussures
+      surchargeDinar = surchargeDinar + (Math.ceil(prixUnitaire / 5) * 5 - surchargeDinar);
+    }
     const ttcTotal = prixUnitaire;
 
     // Prix en dinars : prix unitaire * multiplication + surcharge chaussures lourds
